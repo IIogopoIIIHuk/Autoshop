@@ -1,24 +1,34 @@
 package com.autoshop.controller;
 
 import com.autoshop.DTO.ApplicationDTO;
+import com.autoshop.DTO.AutomobileDTO;
 import com.autoshop.entity.Application;
 import com.autoshop.entity.Automobile;
 import com.autoshop.entity.CarModel;
 import com.autoshop.entity.enums.ApplicationStatus;
+import com.autoshop.entity.enums.EngineType;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -29,6 +39,9 @@ public class AutomobileController {
     private final ApplicationRepository applicationRepository;
     private final AutomobileRepository automobileRepository;
     private final CarModelRepository carModelRepository;
+
+    @Value("${upload.img}")
+    protected String uploadImg;
 
     @GetMapping
     public ResponseEntity<?> automobiles(){
@@ -69,6 +82,41 @@ public class AutomobileController {
 
         applicationRepository.save(application);
         return ResponseEntity.ok("ok");
+    }
+
+    @GetMapping("/add")
+    public List<CarModel> add(){
+        return carModelRepository.findAll();
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<?> add(@RequestBody AutomobileDTO automobileDTO,
+                                 @RequestParam MultipartFile photo,
+                                 @RequestParam EngineType engineType,
+                                 @RequestParam Long carModelId){
+        String resultPhoto = "";
+        try {
+            if (photo != null && !Objects.requireNonNull(photo.getOriginalFilename()).isEmpty()) {
+                String uuidFile = UUID.randomUUID().toString();
+                File uploadDir = new File(uploadImg);
+                if (!uploadDir.exists()) uploadDir.mkdir();
+                resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
+                photo.transferTo(new File(uploadImg + "/" + resultPhoto));
+            }
+        } catch (IOException e) {
+            carModelRepository.findAll();
+        }
+
+        Automobile automobile = Automobile.builder()
+                .name(automobileDTO.getName())
+                .price(automobileDTO.getPrice())
+                .origin(automobileDTO.getOrigin())
+                .count(automobileDTO.getCount())
+                .carModel(carModelRepository.getReferenceById(carModelId))
+                .build();
+
+        automobileRepository.save(automobile);
+        return ResponseEntity.ok("auto is adding");
     }
 
 }
