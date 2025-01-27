@@ -92,7 +92,6 @@ public class AutomobileController {
     @PostMapping("/add")
     public ResponseEntity<?> add(@RequestBody AutomobileDTO automobileDTO,
                                  @RequestParam MultipartFile photo,
-                                 @RequestParam EngineType engineType,
                                  @RequestParam Long carModelId){
         String resultPhoto = "";
         try {
@@ -104,17 +103,17 @@ public class AutomobileController {
                 photo.transferTo(new File(uploadImg + "/" + resultPhoto));
             }
         } catch (IOException e) {
-            carModelRepository.findAll();
+            return ResponseEntity.badRequest().body("Ошибка загрузки фотографии: " + e.getMessage());
         }
 
         Automobile automobile = Automobile.builder()
                 .name(automobileDTO.getName())
                 .price(automobileDTO.getPrice())
                 .origin(automobileDTO.getOrigin())
+                .engineType(automobileDTO.getEngineType())
                 .count(automobileDTO.getCount())
                 .carModel(carModelRepository.getReferenceById(carModelId))
                 .build();
-
 
         automobileRepository.save(automobile);
         return ResponseEntity.ok("auto is adding");
