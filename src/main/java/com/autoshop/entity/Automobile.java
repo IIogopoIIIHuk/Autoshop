@@ -49,7 +49,7 @@ public class Automobile {
     @ManyToOne
     private CarModel carModel;
 
-    @OneToMany
+    @OneToMany(mappedBy = "automobile")
     private List<Application> applications = new ArrayList<>();
 
 

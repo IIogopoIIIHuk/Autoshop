@@ -11,5 +11,5 @@ import java.util.List;
 public interface AutomobileRepository extends JpaRepository<Automobile, Long> {
     List<Automobile> findAllByCarModel_Id(Long carModelId);
 
-    Automobile findByApplication(Application application);
+    Automobile findByApplicationsContains(Application applications);
 }

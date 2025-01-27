@@ -115,6 +115,7 @@ public class AutomobileController {
                 .carModel(carModelRepository.getReferenceById(carModelId))
                 .build();
 
+
         automobileRepository.save(automobile);
         return ResponseEntity.ok("auto is adding");
     }

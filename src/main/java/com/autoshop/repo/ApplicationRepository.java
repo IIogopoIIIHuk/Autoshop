@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
-    List<Application> findByBuyerName(String name);
+    List<Application> findByBuyer(String name);
 }

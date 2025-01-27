@@ -31,7 +31,7 @@ public class ApplicationController {
     @GetMapping // если роль админа, то выводить весь список, если роль юзера то только его
     public ResponseEntity<?> application(){
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<Application> applications = applicationRepository.findByBuyerName(currentUser);
+        List<Application> applications = applicationRepository.findByBuyer(currentUser);
 
         applications.sort(Comparator.comparing(Application::getId));
         Collections.reverse(applications);
@@ -43,7 +43,7 @@ public class ApplicationController {
         Application application = applicationRepository.getReferenceById(id);
         application.setStatus(ApplicationStatus.DONE);
         applicationRepository.save(application);
-        Automobile automobile = automobileRepository.findByApplication(application);
+        Automobile automobile = automobileRepository.findByApplicationsContains(application);
         automobile.setCount(automobile.getCount() - 1);
         automobileRepository.save(automobile);
         return ResponseEntity.ok("automobile is done");
