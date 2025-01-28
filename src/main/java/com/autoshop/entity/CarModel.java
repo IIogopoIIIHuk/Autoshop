@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class CarModel implements Serializable {
     private String name;
 
     @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Automobile> automobiles = new ArrayList<>();
 
     public CarModel(String name) {

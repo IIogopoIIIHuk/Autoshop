@@ -135,7 +135,6 @@ public class AutomobileController {
         }
     }
 
-
 //    {
 //        "name": "Tesla Model X",
 //        "price": 60000,

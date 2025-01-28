@@ -22,7 +22,6 @@ import java.util.List;
 @Entity
 public class User {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -36,6 +35,12 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "phone")
+    private String phone;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Application> applications = new ArrayList<>();
