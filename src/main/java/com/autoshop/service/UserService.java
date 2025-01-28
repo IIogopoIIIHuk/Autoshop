@@ -28,6 +28,10 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
+    public Optional<User> findByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
 
     public User createNewUser(RegistrationUserDTO registrationUserDto) {
         User user = new User();
