@@ -18,7 +18,6 @@ public class AboutController {
 
     @GetMapping
     public List<Automobile> about(){
-        List<Automobile> automobiles = automobileRepository.findAll();
-        return automobiles;
+        return automobileRepository.findAll();
     }
 }

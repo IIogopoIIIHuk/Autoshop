@@ -68,7 +68,6 @@ public class ApplicationController {
         return ResponseEntity.ok(application);
     }
 
-
     // PutMapping ?
     @PostMapping("/{id}/reject") // http://localhost:8080/application/1/reject
     public ResponseEntity<?> rejectApplication(@PathVariable Long id){
