@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface AutomobileRepository extends JpaRepository<Automobile, Long> {
-    List<Automobile> findAllByCarModel_Id(Long carModelId);
+    List<Automobile> findByName(String name);
 
     Automobile findByApplicationsContains(Application applications);
 }

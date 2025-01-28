@@ -1,7 +1,9 @@
 package com.autoshop.controller;
 
+import ch.qos.logback.core.boolex.EvaluationException;
 import com.autoshop.DTO.ApplicationDTO;
 import com.autoshop.DTO.AutomobileDTO;
+import com.autoshop.DTO.CarModelDTO;
 import com.autoshop.entity.Application;
 import com.autoshop.entity.Automobile;
 import com.autoshop.entity.CarModel;
@@ -10,6 +12,8 @@ import com.autoshop.entity.enums.EngineType;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -59,9 +64,9 @@ public class AutomobileController {
         return ResponseEntity.ok("all automobiles is getting" + automobiles);
     }
 
-    @GetMapping("/search") // http://localhost:8080/automobiles/search?carModelId=2
-    public ResponseEntity<?> search(@PathVariable Long carModelId){
-        List<Automobile> automobiles = automobileRepository.findAllByCarModel_Id(carModelId);
+    @GetMapping("/searchAuto") // http://localhost:8080/automobiles/search?carModelId=2
+    public ResponseEntity<?> searchByTitle(@RequestParam String name){
+        List<Automobile> automobiles = automobileRepository.findByName(name);
         return ResponseEntity.ok("search is get" + automobiles);
     }
 
@@ -69,7 +74,18 @@ public class AutomobileController {
     public ResponseEntity<?> getAutomobile(@PathVariable Long id){
         Automobile automobile = automobileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-        return ResponseEntity.ok("automobile is getting");
+
+        AutomobileDTO automobileDTO = new AutomobileDTO();
+        automobileDTO.setId(automobile.getId());
+        automobileDTO.setName(automobile.getName());
+        automobileDTO.setPrice(automobile.getPrice());
+        automobileDTO.setCount(automobile.getCount());
+        automobileDTO.setOrigin(automobile.getOrigin());
+        automobileDTO.setEngineType(automobile.getEngineType());
+        automobileDTO.setPhoto(automobile.getPhoto());
+        automobileDTO.setCarModel(automobile.getCarModel());
+
+        return ResponseEntity.ok("automobile is getting " + automobileDTO);
     }
 
     @PostMapping("/{id}/application") // http://localhost:8080/automobiles/1/application
@@ -115,6 +131,7 @@ public class AutomobileController {
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
 
             Automobile automobile = Automobile.builder()
@@ -125,6 +142,7 @@ public class AutomobileController {
                     .engineType(automobileDTO.getEngineType())
                     .count(automobileDTO.getCount())
                     .carModel(carModelRepository.getReferenceById(carModelId))
+                    .applications(new ArrayList<>())
                     .build();
 
             automobileRepository.save(automobile);
@@ -145,40 +163,47 @@ public class AutomobileController {
 //    }
 
     @PutMapping("/{id}/edit") // http://localhost:8080/automobiles/1/edit
-    public ResponseEntity<?> editAutomobile(@PathVariable Long id,
-                                            @RequestBody AutomobileDTO automobileDTO,
-                                            @RequestBody MultipartFile photo,
-                                            @RequestBody Long carModelId) {
-
-        Automobile automobile = automobileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-
-        automobile = Automobile.builder()
-                .name(automobileDTO.getName())
-                .price(automobileDTO.getPrice())
-                .origin(automobileDTO.getOrigin())
-                .engineType(automobileDTO.getEngineType())
-                .count(automobileDTO.getCount())
-                .carModel(carModelRepository.getReferenceById(carModelId))
-                .build();
+    public ResponseEntity<?> editAutomobile(
+            @PathVariable Long id,
+            @RequestPart(value = "auto") String autoJson,
+            @RequestPart(value = "file", required = false) MultipartFile photo,
+            @RequestParam(value = "carModelId") Long carModelId) {
 
         try {
-            if (photo != null && !Objects.requireNonNull(photo.getOriginalFilename()).isEmpty()) {
+            Automobile existingAuto = automobileRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
+
+            String resultPhoto = existingAuto.getPhoto();
+            if (photo != null && !photo.isEmpty()) {
                 String uuidFile = UUID.randomUUID().toString();
-                File uploadDir = new File(uploadImg);
-                if (!uploadDir.exists()) uploadDir.mkdir();
-                String resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
-                photo.transferTo(new File(uploadImg + "/" + resultPhoto));
-                automobile.setPhoto(resultPhoto);
+                Path uploadPath = Paths.get(uploadImg, "automobile");
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
+                Path filePath = uploadPath.resolve(uuidFile + "_" + photo.getOriginalFilename());
+                Files.copy(photo.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             }
+
+            existingAuto.setName(automobileDTO.getName());
+            existingAuto.setPrice(automobileDTO.getPrice());
+            existingAuto.setOrigin(automobileDTO.getOrigin());
+            existingAuto.setCount(automobileDTO.getCount());
+            existingAuto.setEngineType(automobileDTO.getEngineType());
+            existingAuto.setCarModel(carModelRepository.getReferenceById(carModelId));
+            existingAuto.setPhoto(resultPhoto);
+
+            automobileRepository.save(existingAuto);
+
+            return ResponseEntity.ok(existingAuto);
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body("Ошибка загрузки фотографии: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Ошибка обработки JSON: " + e.getMessage());
         }
-
-        automobile = automobileRepository.save(automobile);
-
-        return ResponseEntity.ok(automobile);
     }
+
 
 // фото выбрать
 //    {

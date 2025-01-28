@@ -1,6 +1,7 @@
 package com.autoshop.entity;
 
 import com.autoshop.entity.enums.ApplicationStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,6 +16,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.io.Serializable;
 
@@ -38,6 +40,7 @@ public class Application implements Serializable {
     private String titleAuto;
 
     @ManyToOne
+    @JsonBackReference
     private Automobile automobile;
 
     private String buyer;

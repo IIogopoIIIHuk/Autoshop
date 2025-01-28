@@ -12,4 +12,5 @@ public class ApplicationDTO {
     private float price;
     private String titleAuto;
     private ApplicationStatus status = ApplicationStatus.WAITING;
+    private AutomobileDTO automobile;
 }

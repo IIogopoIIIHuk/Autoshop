@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class AutomobileDTO {
+    private Long id;
     private String name;
     private String photo;
     private String origin;
@@ -13,4 +14,5 @@ public class AutomobileDTO {
     private int count;
     private CarModel carModel;
     private EngineType engineType;
+
 }

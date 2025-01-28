@@ -1,5 +1,6 @@
 package com.autoshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,8 +33,8 @@ public class CarModel implements Serializable {
 
     private String name;
 
-    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
     @JsonIgnore
+    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
     private List<Automobile> automobiles = new ArrayList<>();
 
     public CarModel(String name) {
@@ -42,5 +43,13 @@ public class CarModel implements Serializable {
 
     public float getIncomePrice() {
         return round(automobiles.stream().reduce(0f, (i, automobile) -> i + automobile.getIncomePrice(), Float::sum));
+    }
+
+    @Override
+    public String toString(){
+        return "CarModel{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

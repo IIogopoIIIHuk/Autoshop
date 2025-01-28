@@ -2,6 +2,8 @@ package com.autoshop.entity;
 
 import com.autoshop.entity.enums.ApplicationStatus;
 import com.autoshop.entity.enums.EngineType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -17,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,13 +55,13 @@ public class Automobile {
     @Enumerated(EnumType.STRING)
     private EngineType engineType;
 
-
-
+    @JsonIgnore
     @ManyToOne
     private CarModel carModel;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "automobile")
-    private List<Application> applications = new ArrayList<>();
+    private List<Application> applications;
 
 
     public float getIncomePrice() {
@@ -80,5 +83,18 @@ public class Automobile {
         value = value * factor;
         long tmp = Math.round(value);
         return (float) tmp / factor;
+    }
+
+
+    @Override
+    public String toString(){
+        return "Automobile{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", origin='" + origin + '\'' +
+                ", count=" + count +
+                ", engineType=" + engineType +
+                '}';
     }
 }
