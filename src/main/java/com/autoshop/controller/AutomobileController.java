@@ -10,6 +10,7 @@ import com.autoshop.entity.enums.EngineType;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,11 +25,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -86,42 +92,50 @@ public class AutomobileController {
         return ResponseEntity.status(HttpStatus.CREATED).body(application);
     }
 
+    @PostMapping(value = "/add", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> addAutomobile(
+            @RequestPart(value = "auto") String autoJson,
+            @RequestPart(value = "file", required = false) MultipartFile photo,
+            @RequestParam(value = "carModelId") Long carModelId) {
 
-    @PostMapping("/add") // http://localhost:8080/automobiles/add
-    public ResponseEntity<?> addAutomobile(@RequestBody AutomobileDTO automobileDTO,
-                                 @RequestParam MultipartFile photo,
-                                 @RequestParam Long carModelId){
         String resultPhoto = "";
         try {
             if (photo != null && !Objects.requireNonNull(photo.getOriginalFilename()).isEmpty()) {
                 String uuidFile = UUID.randomUUID().toString();
-                File uploadDir = new File(uploadImg);
-                if (!uploadDir.exists()) uploadDir.mkdir();
+
+                Path uploadPath = Paths.get(uploadImg, "automobile");
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
                 resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
-                photo.transferTo(new File(uploadImg + "/" + resultPhoto));
+                Path filePath = uploadPath.resolve(uuidFile + "_" + photo.getOriginalFilename());
+
+                Files.copy(photo.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
+
+            Automobile automobile = Automobile.builder()
+                    .name(automobileDTO.getName())
+                    .photo(resultPhoto)
+                    .price(automobileDTO.getPrice())
+                    .origin(automobileDTO.getOrigin())
+                    .engineType(automobileDTO.getEngineType())
+                    .count(automobileDTO.getCount())
+                    .carModel(carModelRepository.getReferenceById(carModelId))
+                    .build();
+
+            automobileRepository.save(automobile);
+            return ResponseEntity.status(HttpStatus.CREATED).body(automobile);
+
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Ошибка загрузки фотографии: " + e.getMessage());
         }
-
-//        CarModel carModel = carModelRepository.findById(carModelId)
-//                .orElseThrow(() -> new RuntimeException("Модель автомобиля с ID " + carModelId + " не найдена"));
-
-        Automobile automobile = Automobile.builder()
-                .name(automobileDTO.getName())
-                .photo(resultPhoto)
-                .price(automobileDTO.getPrice())
-                .origin(automobileDTO.getOrigin())
-                .engineType(automobileDTO.getEngineType())
-                .count(automobileDTO.getCount())
-                .carModel(carModelRepository.getReferenceById(carModelId))
-                .build();
-
-        automobileRepository.save(automobile);
-        return ResponseEntity.status(HttpStatus.CREATED).body(automobile);
     }
 
-// фото выбрать
+
 //    {
 //        "name": "Tesla Model X",
 //        "price": 60000,
