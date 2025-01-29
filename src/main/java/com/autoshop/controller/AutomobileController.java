@@ -141,7 +141,8 @@ public class AutomobileController {
                     .origin(automobileDTO.getOrigin())
                     .engineType(automobileDTO.getEngineType())
                     .count(automobileDTO.getCount())
-                    .carModel(carModelRepository.getReferenceById(carModelId))
+                    .carModel(carModelRepository.findById(carModelId)
+                            .orElseThrow(() -> new RuntimeException("CarModel not found")))
                     .applications(new ArrayList<>())
                     .build();
 
