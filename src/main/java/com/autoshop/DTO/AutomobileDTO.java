@@ -15,4 +15,10 @@ public class AutomobileDTO {
     private CarModel carModel;
     private EngineType engineType;
 
+    public String getPhotoUrl() {
+        if (photo != null && !photo.isEmpty()) {
+            return "http://localhost:8080" + photo;
+        }
+        return null;
+    }
 }

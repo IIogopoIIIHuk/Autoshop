@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +47,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("/automobiles")
 public class AutomobileController {
@@ -82,8 +84,11 @@ public class AutomobileController {
         automobileDTO.setCount(automobile.getCount());
         automobileDTO.setOrigin(automobile.getOrigin());
         automobileDTO.setEngineType(automobile.getEngineType());
-        automobileDTO.setPhoto(automobile.getPhoto());
         automobileDTO.setCarModel(automobile.getCarModel());
+
+        if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
+            automobileDTO.setPhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
+        }
 
         return ResponseEntity.ok(automobileDTO);
     }
@@ -118,16 +123,17 @@ public class AutomobileController {
         try {
             if (photo != null && !Objects.requireNonNull(photo.getOriginalFilename()).isEmpty()) {
                 String uuidFile = UUID.randomUUID().toString();
+                String fileName = uuidFile + "_" + photo.getOriginalFilename();
 
-                Path uploadPath = Paths.get(uploadImg, "automobile");
+                Path uploadPath = Paths.get(uploadImg);
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
-                resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
-                Path filePath = uploadPath.resolve(uuidFile + "_" + photo.getOriginalFilename());
-
+                Path filePath = uploadPath.resolve(fileName);
                 Files.copy(photo.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                resultPhoto = fileName;
             }
 
             ObjectMapper objectMapper = new ObjectMapper();

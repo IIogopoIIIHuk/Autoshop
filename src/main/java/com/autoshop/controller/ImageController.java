@@ -1,0 +1,45 @@
+package com.autoshop.controller;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+@RestController
+@RequestMapping("/img")
+public class ImageController {
+
+    private final String uploadImg = "D:/AutoShop_Images/automobile/";
+
+    @GetMapping("/automobile/{filename:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(uploadImg).resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            // Определяем MIME-тип файла
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream"; // Если не определено, отправляем как бинарные данные
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType)) // Правильный Content-Type
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+
+        } catch (IOException e) {
+            throw new RuntimeException("File not found: " + filename);
+        }
+    }
+}
+
+

@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import java.util.List;
 
@@ -33,6 +34,11 @@ public class SecurityConfig {
     public SecurityConfig(@Lazy UserService userService, @Lazy JwtRequestFilter jwtRequestFilter){
         this.userService = userService;
         this.jwtRequestFilter = jwtRequestFilter;
+    }
+
+    public void addResourceHandlers(ResourceHandlerRegistry registry){
+        registry.addResourceHandler("/img/**")
+                .addResourceLocations("file:D:/Courses/AutoShop_Arina/resources/img/");
     }
 
     @Bean
