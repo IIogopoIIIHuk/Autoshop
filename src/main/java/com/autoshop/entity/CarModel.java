@@ -37,17 +37,17 @@ public class CarModel implements Serializable {
 
     private String name;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
-    private List<Automobile> automobiles = new ArrayList<>();
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
+//    private List<Automobile> automobiles = new ArrayList<>();
 
     public CarModel(String name) {
         this.name = name;
     }
 
-    public float getIncomePrice() {
-        return round(automobiles.stream().reduce(0f, (i, automobile) -> i + automobile.getIncomePrice(), Float::sum));
-    }
+//    public float getIncomePrice() {
+//        return round(automobiles.stream().reduce(0f, (i, automobile) -> i + automobile.getIncomePrice(), Float::sum));
+//    }
 
     @Override
     public String toString(){

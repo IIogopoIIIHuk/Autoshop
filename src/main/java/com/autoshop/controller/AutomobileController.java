@@ -61,13 +61,13 @@ public class AutomobileController {
     @GetMapping // URL: http://localhost:8080/automobiles
     public ResponseEntity<?> getAllAutomobiles(){
         List<Automobile> automobiles = automobileRepository.findAll();
-        return ResponseEntity.ok("all automobiles is getting" + automobiles);
+        return ResponseEntity.ok(automobiles);
     }
 
     @GetMapping("/searchAuto") // http://localhost:8080/automobiles/search?carModelId=2
     public ResponseEntity<?> searchByTitle(@RequestParam String name){
         List<Automobile> automobiles = automobileRepository.findByName(name);
-        return ResponseEntity.ok("search is get" + automobiles);
+        return ResponseEntity.ok(automobiles);
     }
 
     @GetMapping("/{id}") // http://localhost:8080/automobiles/1
@@ -85,7 +85,7 @@ public class AutomobileController {
         automobileDTO.setPhoto(automobile.getPhoto());
         automobileDTO.setCarModel(automobile.getCarModel());
 
-        return ResponseEntity.ok("automobile is getting " + automobileDTO);
+        return ResponseEntity.ok(automobileDTO);
     }
 
     @PostMapping("/{id}/application") // http://localhost:8080/automobiles/1/application
@@ -105,7 +105,7 @@ public class AutomobileController {
                 .build();
 
         applicationRepository.save(application);
-        return ResponseEntity.status(HttpStatus.CREATED).body(application);
+        return ResponseEntity.ok(application);
     }
 
     @PostMapping(value = "/add", consumes = {"multipart/form-data"})
@@ -146,7 +146,7 @@ public class AutomobileController {
                     .build();
 
             automobileRepository.save(automobile);
-            return ResponseEntity.status(HttpStatus.CREATED).body(automobile);
+            return ResponseEntity.ok(automobile);
 
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Ошибка загрузки фотографии: " + e.getMessage());
@@ -158,7 +158,7 @@ public class AutomobileController {
 //        "price": 60000,
 //        "origin": "USA",
 //        "count": 5,
-//        "engineType": "ELECTRIC",
+//        "engineType": "HYBRID",
 //        "carModelId": 2
 //    }
 
