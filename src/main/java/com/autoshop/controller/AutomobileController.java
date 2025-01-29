@@ -13,6 +13,7 @@ import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -59,17 +60,53 @@ public class AutomobileController {
     @Value("${upload.img}")
     protected String uploadImg;
 
-
     @GetMapping // URL: http://localhost:8080/automobiles
     public ResponseEntity<?> getAllAutomobiles(){
         List<Automobile> automobiles = automobileRepository.findAll();
-        return ResponseEntity.ok(automobiles);
+
+        List<AutomobileDTO> automobileDTOs = automobiles.stream().map(automobile -> {
+            AutomobileDTO automobileDTO = new AutomobileDTO();
+            automobileDTO.setId(automobile.getId());
+            automobileDTO.setName(automobile.getName());
+            automobileDTO.setPrice(automobile.getPrice());
+            automobileDTO.setCount(automobile.getCount());
+            automobileDTO.setOrigin(automobile.getOrigin());
+            automobileDTO.setEngineType(automobile.getEngineType());
+            automobileDTO.setCarModel(automobile.getCarModel());
+
+            if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
+                automobileDTO.setPhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
+            }
+
+            return automobileDTO;
+        }).toList();
+
+        return ResponseEntity.ok(automobileDTOs);
     }
 
-    @GetMapping("/searchAuto") // http://localhost:8080/automobiles/search?carModelId=2
+    @GetMapping("/searchAuto") // http://localhost:8080/automobiles/searchAuto?name=Toyota
     public ResponseEntity<?> searchByTitle(@RequestParam String name){
         List<Automobile> automobiles = automobileRepository.findByName(name);
-        return ResponseEntity.ok(automobiles);
+
+        List<AutomobileDTO> automobileDTOs = automobiles.stream().map(automobile -> {
+            AutomobileDTO automobileDTO = new AutomobileDTO();
+            automobileDTO.setId(automobile.getId());
+            automobileDTO.setName(automobile.getName());
+            automobileDTO.setPrice(automobile.getPrice());
+            automobileDTO.setCount(automobile.getCount());
+            automobileDTO.setOrigin(automobile.getOrigin());
+            automobileDTO.setEngineType(automobile.getEngineType());
+            automobileDTO.setCarModel(automobile.getCarModel());
+
+            // Добавляем URL к фото
+            if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
+                automobileDTO.setPhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
+            }
+
+            return automobileDTO;
+        }).toList();
+
+        return ResponseEntity.ok(automobileDTOs);
     }
 
     @GetMapping("/{id}") // http://localhost:8080/automobiles/1
@@ -181,18 +218,29 @@ public class AutomobileController {
                     .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
 
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
 
             String resultPhoto = existingAuto.getPhoto();
+
             if (photo != null && !photo.isEmpty()) {
                 String uuidFile = UUID.randomUUID().toString();
-                Path uploadPath = Paths.get(uploadImg, "automobile");
+                String fileName = uuidFile + "_" + photo.getOriginalFilename();
+
+                Path uploadPath = Paths.get(uploadImg);
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
-                resultPhoto = "automobile/" + uuidFile + "_" + photo.getOriginalFilename();
-                Path filePath = uploadPath.resolve(uuidFile + "_" + photo.getOriginalFilename());
+
+                Path filePath = uploadPath.resolve(fileName);
                 Files.copy(photo.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                if (existingAuto.getPhoto() != null && !existingAuto.getPhoto().isEmpty()) {
+                    Path oldFilePath = uploadPath.resolve(existingAuto.getPhoto());
+                    Files.deleteIfExists(oldFilePath);
+                }
+
+                resultPhoto = fileName;
             }
 
             existingAuto.setName(automobileDTO.getName());
@@ -200,16 +248,32 @@ public class AutomobileController {
             existingAuto.setOrigin(automobileDTO.getOrigin());
             existingAuto.setCount(automobileDTO.getCount());
             existingAuto.setEngineType(automobileDTO.getEngineType());
-            existingAuto.setCarModel(carModelRepository.getReferenceById(carModelId));
+            existingAuto.setCarModel(carModelRepository.findById(carModelId)
+                    .orElseThrow(() -> new RuntimeException("CarModel not found")));
             existingAuto.setPhoto(resultPhoto);
 
             automobileRepository.save(existingAuto);
 
-            return ResponseEntity.ok(existingAuto);
+            AutomobileDTO responseDTO = new AutomobileDTO();
+            responseDTO.setId(existingAuto.getId());
+            responseDTO.setName(existingAuto.getName());
+            responseDTO.setPrice(existingAuto.getPrice());
+            responseDTO.setCount(existingAuto.getCount());
+            responseDTO.setOrigin(existingAuto.getOrigin());
+            responseDTO.setEngineType(existingAuto.getEngineType());
+            responseDTO.setCarModel(existingAuto.getCarModel());
+
+            if (existingAuto.getPhoto() != null && !existingAuto.getPhoto().isEmpty()) {
+                responseDTO.setPhoto("http://localhost:8080/img/automobile/" + existingAuto.getPhoto());
+            }
+
+            return ResponseEntity.ok(responseDTO);
+
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body("Ошибка обработки JSON: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Ошибка загрузки фотографии: " + e.getMessage());
         }
     }
+
 
 
 // фото выбрать
