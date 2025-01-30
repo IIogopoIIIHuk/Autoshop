@@ -4,8 +4,10 @@ import com.autoshop.DTO.JwtRequest;
 import com.autoshop.DTO.JwtResponse;
 import com.autoshop.DTO.RegistrationUserDTO;
 import com.autoshop.DTO.UserDTO;
+import com.autoshop.entity.Role;
 import com.autoshop.entity.User;
 import com.autoshop.exception.AppError;
+import com.autoshop.repo.RoleRepository;
 import com.autoshop.repo.UserRepository;
 import com.autoshop.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,9 @@ public class AuthService {
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final RoleService roleService;
+    private final RoleRepository roleRepository;
+
 
     public ResponseEntity<?> createAuthToken(JwtRequest authRequest) {
         try {
@@ -35,11 +41,19 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(), "Invalid login or password"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(), "Неверный логин или пароль"), HttpStatus.UNAUTHORIZED);
         }
+        User user = userRepository.findByUsername(authRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
         UserDetails userDetails = loadUserByUsername(authRequest.getUsername());
         String token = jwtTokenUtils.generateToken(userDetails);
-        return ResponseEntity.ok(new JwtResponse(token));
+
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(token, roles));
     }
 
     public ResponseEntity<?> createNewUser(RegistrationUserDTO registrationUserDTO) {
@@ -52,7 +66,7 @@ public class AuthService {
     }
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

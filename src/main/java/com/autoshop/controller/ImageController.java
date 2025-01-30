@@ -27,11 +27,11 @@ public class ImageController {
 
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) {
-                contentType = "application/octet-stream"; // Если не определено, отправляем как бинарные данные
+                contentType = "application/octet-stream";
             }
 
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType)) // Правильный Content-Type
+                    .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
 

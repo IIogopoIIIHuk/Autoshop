@@ -275,7 +275,6 @@ public class AutomobileController {
     }
 
 
-
 // фото выбрать
 //    {
 //        "name": "Tesla Model S Plaid",
