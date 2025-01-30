@@ -25,7 +25,6 @@ public class ImageController {
             Path filePath = Paths.get(uploadImg).resolve(filename);
             Resource resource = new UrlResource(filePath.toUri());
 
-            // Определяем MIME-тип файла
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) {
                 contentType = "application/octet-stream"; // Если не определено, отправляем как бинарные данные
