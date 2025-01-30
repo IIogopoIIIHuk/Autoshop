@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,17 +40,17 @@ public class CarModel implements Serializable {
 
     private String name;
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
-//    private List<Automobile> automobiles = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Automobile> automobiles = new ArrayList<>();
 
     public CarModel(String name) {
         this.name = name;
     }
 
-//    public float getIncomePrice() {
-//        return round(automobiles.stream().reduce(0f, (i, automobile) -> i + automobile.getIncomePrice(), Float::sum));
-//    }
+    public float getIncomePrice() {
+        return round(automobiles.stream().reduce(0f, (i, automobile) -> i + automobile.getIncomePrice(), Float::sum));
+    }
 
     @Override
     public String toString(){

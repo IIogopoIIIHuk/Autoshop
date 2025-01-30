@@ -45,15 +45,11 @@ public class Application implements Serializable {
 
     private String buyer;
 
-    @ManyToOne
-    private User owner;
-
     public Application(){};
 
     public Application(Automobile automobile, User owner) {
         this.price = automobile.getPrice();
         this.automobile = automobile;
-        this.owner = owner;
     }
 
     public String toString(){
@@ -63,7 +59,6 @@ public class Application implements Serializable {
                 ", status= " + status +
                 ", automobile= " + automobile +
                 ", buyer= " + buyer +
-                ", owner= " + owner +
                 '}';
     }
 }

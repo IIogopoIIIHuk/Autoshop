@@ -136,7 +136,7 @@ public class AutomobileController {
         log.info("Current user: {}", currentUser);
 
         Automobile automobile = automobileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Automobile not found"));
+                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
 
         Application application = Application.builder()
                 .price(automobile.getPrice())
@@ -185,7 +185,7 @@ public class AutomobileController {
                     .engineType(automobileDTO.getEngineType())
                     .count(automobileDTO.getCount())
                     .carModel(carModelRepository.findById(carModelId)
-                            .orElseThrow(() -> new RuntimeException("CarModel not found")))
+                            .orElseThrow(() -> new RuntimeException("Модель не найдена")))
                     .applications(new ArrayList<>())
                     .build();
 
@@ -249,7 +249,7 @@ public class AutomobileController {
             existingAuto.setCount(automobileDTO.getCount());
             existingAuto.setEngineType(automobileDTO.getEngineType());
             existingAuto.setCarModel(carModelRepository.findById(carModelId)
-                    .orElseThrow(() -> new RuntimeException("CarModel not found")));
+                    .orElseThrow(() -> new RuntimeException("Модель не найдена")));
             existingAuto.setPhoto(resultPhoto);
 
             automobileRepository.save(existingAuto);

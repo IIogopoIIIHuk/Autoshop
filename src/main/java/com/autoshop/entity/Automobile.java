@@ -4,6 +4,7 @@ import com.autoshop.entity.enums.ApplicationStatus;
 import com.autoshop.entity.enums.EngineType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -57,13 +58,13 @@ public class Automobile {
     @Enumerated(EnumType.STRING)
     private EngineType engineType;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_model_id")
     private CarModel carModel;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "automobile")
+    @OneToMany(mappedBy = "automobile", cascade = CascadeType.ALL)
     private List<Application> applications;
 
 

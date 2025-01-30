@@ -42,9 +42,6 @@ public class User {
     @Column(name = "phone")
     private String phone;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private List<Application> applications = new ArrayList<>();
-
     @ManyToMany
     @JoinTable(
             name = "users_roles",
