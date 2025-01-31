@@ -2,10 +2,13 @@ package com.autoshop.controller;
 
 import com.autoshop.entity.Application;
 import com.autoshop.entity.Automobile;
+import com.autoshop.entity.User;
 import com.autoshop.entity.enums.ApplicationStatus;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
+import com.autoshop.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,27 +25,38 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/application")
 public class ApplicationController {
 
     private final ApplicationRepository applicationRepository;
     private final AutomobileRepository automobileRepository;
+    private final UserRepository userRepository;
+
 
     @GetMapping // http://localhost:8080/application
     public ResponseEntity<?> getApplication() {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        List<String> roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .map(auth -> auth.getAuthority())
+        User user = userRepository.findByUsername(currentUser)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        List<String> roles = user.getRoles().stream()
+                .map(role -> role.getName())
                 .collect(Collectors.toList());
 
         List<Application> applications;
 
+        log.info("Текущий пользователь: {}", currentUser);
+        log.info("Роли пользователя: {}", roles);
+
         if (roles.contains("ROLE_ADMIN")) {
             applications = applicationRepository.findAll();
-        } else {
+        } else if(roles.contains("ROLE_USER")) {
             applications = applicationRepository.findByBuyer(currentUser);
-        }
+        } else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Нет доступа к заявкам");
+
 
         applications.sort(Comparator.comparing(Application::getId).reversed());
 

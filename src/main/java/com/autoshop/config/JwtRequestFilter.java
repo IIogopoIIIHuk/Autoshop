@@ -41,6 +41,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<String> roles = jwtTokenUtils.getRoles(jwt);
+
+            log.info("Роли из токена: {}", roles);
+
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                     username,
                     null,
