@@ -9,6 +9,7 @@ import com.autoshop.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ public class ProfileController {
     private final UserRepository userRepository;
     private final UserService userService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(){
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -45,6 +47,7 @@ public class ProfileController {
         ));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/edit")
     public ResponseEntity<?> editProfile(@RequestBody UserDTO userDTO){
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();

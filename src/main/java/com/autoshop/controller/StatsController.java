@@ -7,6 +7,7 @@ import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -20,6 +21,8 @@ public class StatsController {
     private final AutomobileRepository automobileRepository;
     private final CarModelRepository carModelRepository;
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ResponseEntity<Map<String, Object>> getStats() {
         List<Automobile> automobiles = automobileRepository.findAll();
@@ -32,12 +35,17 @@ public class StatsController {
         return ResponseEntity.ok(response);
     }
 
+    // повесил админа, потому что удаляет все машины в базе,
+    // хз зачем тут вообще этот метод, но было так, надо смотреть по дизайну,
+    // остальные методы могут все юзать и админ и юзер
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/reset")
     public ResponseEntity<String> resetStats() {
         automobileRepository.deleteAll();
         return ResponseEntity.ok("All automobile data has been reset.");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllStats() {
         List<Automobile> automobiles = automobileRepository.findAll();
@@ -66,6 +74,7 @@ public class StatsController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/income")
     public ResponseEntity<List<Automobile>> getTop5Income() {
         List<Automobile> top5ByIncome = automobileRepository.findAll().stream()
@@ -76,6 +85,7 @@ public class StatsController {
         return ResponseEntity.ok(top5ByIncome);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/count")
     public ResponseEntity<List<Automobile>> getSortedByCount() {
         List<Automobile> sortedByCount = automobileRepository.findAll().stream()
@@ -85,6 +95,7 @@ public class StatsController {
         return ResponseEntity.ok(sortedByCount);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/model")
     public ResponseEntity<Map<String, Float>> getModelIncome() {
         Map<String, Float> modelIncomeMap = carModelRepository.findAll().stream()

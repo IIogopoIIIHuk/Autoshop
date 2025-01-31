@@ -21,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,6 +62,7 @@ public class AutomobileController {
     @Value("${upload.img}")
     protected String uploadImg;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping // URL: http://localhost:8080/automobiles
     public ResponseEntity<?> getAllAutomobiles(){
         List<Automobile> automobiles = automobileRepository.findAll();
@@ -72,7 +75,8 @@ public class AutomobileController {
             automobileDTO.setCount(automobile.getCount());
             automobileDTO.setOrigin(automobile.getOrigin());
             automobileDTO.setEngineType(automobile.getEngineType());
-            automobileDTO.setCarModel(automobile.getCarModel());
+            automobileDTO.setCarModelId(automobile.getCarModel().getId());
+            automobileDTO.setCarModelName(automobile.getCarModel().getName());
 
             if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
                 automobileDTO.setPhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
@@ -84,9 +88,10 @@ public class AutomobileController {
         return ResponseEntity.ok(automobileDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/searchAuto") // http://localhost:8080/automobiles/searchAuto?name=Toyota
     public ResponseEntity<?> searchByTitle(@RequestParam String name){
-        List<Automobile> automobiles = automobileRepository.findByName(name);
+        List<Automobile> automobiles = automobileRepository.findByNameContaining(name);
 
         List<AutomobileDTO> automobileDTOs = automobiles.stream().map(automobile -> {
             AutomobileDTO automobileDTO = new AutomobileDTO();
@@ -96,7 +101,8 @@ public class AutomobileController {
             automobileDTO.setCount(automobile.getCount());
             automobileDTO.setOrigin(automobile.getOrigin());
             automobileDTO.setEngineType(automobile.getEngineType());
-            automobileDTO.setCarModel(automobile.getCarModel());
+            automobileDTO.setCarModelId(automobile.getCarModel().getId());
+            automobileDTO.setCarModelName(automobile.getCarModel().getName());
 
             // Добавляем URL к фото
             if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
@@ -109,6 +115,7 @@ public class AutomobileController {
         return ResponseEntity.ok(automobileDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{id}") // http://localhost:8080/automobiles/1
     public ResponseEntity<?> getAutomobile(@PathVariable Long id){
         Automobile automobile = automobileRepository.findById(id)
@@ -121,7 +128,8 @@ public class AutomobileController {
         automobileDTO.setCount(automobile.getCount());
         automobileDTO.setOrigin(automobile.getOrigin());
         automobileDTO.setEngineType(automobile.getEngineType());
-        automobileDTO.setCarModel(automobile.getCarModel());
+        automobileDTO.setCarModelId(automobile.getCarModel().getId());
+        automobileDTO.setCarModelName(automobile.getCarModel().getName());
 
         if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
             automobileDTO.setPhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
@@ -130,6 +138,7 @@ public class AutomobileController {
         return ResponseEntity.ok(automobileDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/{id}/application") // http://localhost:8080/automobiles/1/application
     public ResponseEntity<?> createApplication(@PathVariable Long id){
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -150,6 +159,7 @@ public class AutomobileController {
         return ResponseEntity.ok(application);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/add", consumes = {"multipart/form-data"})
     public ResponseEntity<?> addAutomobile(
             @RequestPart(value = "auto") String autoJson,
@@ -206,6 +216,7 @@ public class AutomobileController {
 //        "carModelId": 2
 //    }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/edit") // http://localhost:8080/automobiles/1/edit
     public ResponseEntity<?> editAutomobile(
             @PathVariable Long id,
@@ -261,7 +272,8 @@ public class AutomobileController {
             responseDTO.setCount(existingAuto.getCount());
             responseDTO.setOrigin(existingAuto.getOrigin());
             responseDTO.setEngineType(existingAuto.getEngineType());
-            responseDTO.setCarModel(existingAuto.getCarModel());
+            automobileDTO.setCarModelId(existingAuto.getCarModel().getId());
+            automobileDTO.setCarModelName(existingAuto.getCarModel().getName());
 
             if (existingAuto.getPhoto() != null && !existingAuto.getPhoto().isEmpty()) {
                 responseDTO.setPhoto("http://localhost:8080/img/automobile/" + existingAuto.getPhoto());
@@ -285,6 +297,7 @@ public class AutomobileController {
 //            "carModelId": 2
 //    }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/delete") // http://localhost:8080/automobiles/1/delete
     public ResponseEntity<?> delete(@PathVariable Long id){
         if (!automobileRepository.existsById(id)){

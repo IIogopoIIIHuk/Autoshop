@@ -5,6 +5,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -13,11 +14,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/img")
+@RequestMapping("/img") //хз зачем этот контроллер и отвечает ли он за что-то,
+// вроде нет, делал его когда тестил вывод картинки, вешаю роли просто чтобы все работало если нужно все-таки
 public class ImageController {
 
     private final String uploadImg = "D:/AutoShop_Images/automobile/";
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/automobile/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {

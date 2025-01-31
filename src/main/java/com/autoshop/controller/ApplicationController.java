@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ public class ApplicationController {
     private final UserRepository userRepository;
 
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping // http://localhost:8080/application
     public ResponseEntity<?> getApplication() {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -57,12 +59,12 @@ public class ApplicationController {
         } else
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Нет доступа к заявкам");
 
-
         applications.sort(Comparator.comparing(Application::getId).reversed());
 
         return ResponseEntity.ok(applications);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/done") // http://localhost:8080/application/1/done
     public ResponseEntity<?> markApplicationAsDone(@PathVariable Long id){
         Application application = applicationRepository.findById(id)
@@ -83,6 +85,7 @@ public class ApplicationController {
     }
 
     // PutMapping ?
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/reject") // http://localhost:8080/application/1/reject
     public ResponseEntity<?> rejectApplication(@PathVariable Long id){
         Application application = applicationRepository.findById(id)
@@ -94,6 +97,7 @@ public class ApplicationController {
         return ResponseEntity.ok(application);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/delete") // http://localhost:8080/application/1/delete
     public ResponseEntity<?> delete(@PathVariable Long id){
         if (!applicationRepository.existsById(id)) {

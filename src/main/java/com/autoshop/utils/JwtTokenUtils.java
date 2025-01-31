@@ -34,16 +34,20 @@ public class JwtTokenUtils {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+
         List<String> rolesList = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        log.info("Роли при генерации токена: {}", rolesList); // Логируем
+//        log.info("Роли в userDetails: {}", userDetails.getAuthorities().toString()); // Новое логирование
+        log.info("Роли при генерации токена: {}", rolesList);
 
+        // Добавляем роли в payload токена
         claims.put("roles", rolesList);
 
         Date issuedDate = new Date();
         Date expiredDate = new Date(issuedDate.getTime() + jwtLifetime.toMillis());
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -52,6 +56,8 @@ public class JwtTokenUtils {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+
 
     public String getUsername(String token) {
         return getAllClaimsFromToken(token).getSubject();

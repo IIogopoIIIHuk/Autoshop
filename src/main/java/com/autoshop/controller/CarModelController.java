@@ -7,6 +7,7 @@ import com.autoshop.repo.CarModelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ public class CarModelController {
 
     private final CarModelRepository carModelRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ResponseEntity<?> getAllModels(){
         List<CarModelDTO> models = carModelRepository.findAll().stream()
@@ -34,6 +36,7 @@ public class CarModelController {
         return ResponseEntity.ok(models);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<CarModelDTO> addModel(@RequestBody CarModelDTO carModelDTO){
         CarModel carModel = CarModel.builder()
@@ -43,6 +46,7 @@ public class CarModelController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new CarModelDTO(carModel.getId(), carModel.getName()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/edit")
     public ResponseEntity<CarModelDTO> updateModel(@PathVariable Long id, @RequestBody CarModelDTO carModelDTO) {
         CarModel carModel = carModelRepository.findById(id)
@@ -53,6 +57,7 @@ public class CarModelController {
         return ResponseEntity.ok(new CarModelDTO(updatedModel.getId(), updatedModel.getName()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<Void> deleteModel(@PathVariable Long id) {
         if (!carModelRepository.existsById(id)) {

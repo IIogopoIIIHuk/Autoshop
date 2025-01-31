@@ -12,7 +12,8 @@ public class AutomobileDTO {
     private String origin;
     private float price;
     private int count;
-    private CarModel carModel;
+    private Long carModelId;
+    private String carModelName;
     private EngineType engineType;
 
     public String getPhotoUrl() {
