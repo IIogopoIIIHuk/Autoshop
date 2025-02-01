@@ -10,8 +10,8 @@ public class AutomobileDTO {
     private String name;
     private String photo;
     private String origin;
-    private float price;
-    private int count;
+    private Float price;
+    private Integer count;
     private Long carModelId;
     private String carModelName;
     private EngineType engineType;

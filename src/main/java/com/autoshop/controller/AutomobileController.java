@@ -222,9 +222,9 @@ public class AutomobileController {
     @PutMapping("/{id}/edit") // http://localhost:8080/automobiles/1/edit
     public ResponseEntity<?> editAutomobile(
             @PathVariable Long id,
-            @RequestPart(value = "auto") String autoJson,
+            @RequestPart(value = "auto", required = false) String autoJson,
             @RequestPart(value = "file", required = false) MultipartFile photo,
-            @RequestParam(value = "carModelId") Long carModelId) {
+            @RequestParam(value = "carModelId", required = false) Long carModelId) {
 
         try {
             Automobile existingAuto = automobileRepository.findById(id)
@@ -232,10 +232,32 @@ public class AutomobileController {
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
+            if (autoJson != null && !autoJson.isEmpty()) {
+                AutomobileDTO automobileDTO = objectMapper.readValue(autoJson, AutomobileDTO.class);
+
+                if (automobileDTO.getName() != null) {
+                    existingAuto.setName(automobileDTO.getName());
+                }
+                if (automobileDTO.getPrice() != null) {
+                    existingAuto.setPrice(automobileDTO.getPrice());
+                }
+                if (automobileDTO.getOrigin() != null) {
+                    existingAuto.setOrigin(automobileDTO.getOrigin());
+                }
+                if (automobileDTO.getCount() != null) {
+                    existingAuto.setCount(automobileDTO.getCount());
+                }
+                if (automobileDTO.getEngineType() != null) {
+                    existingAuto.setEngineType(automobileDTO.getEngineType());
+                }
+            }
+
+            if (carModelId != null) {
+                existingAuto.setCarModel(carModelRepository.findById(carModelId)
+                        .orElseThrow(() -> new RuntimeException("Модель не найдена")));
+            }
 
             String resultPhoto = existingAuto.getPhoto();
-
             if (photo != null && !photo.isEmpty()) {
                 String uuidFile = UUID.randomUUID().toString();
                 String fileName = uuidFile + "_" + photo.getOriginalFilename();
@@ -256,15 +278,7 @@ public class AutomobileController {
                 resultPhoto = fileName;
             }
 
-            existingAuto.setName(automobileDTO.getName());
-            existingAuto.setPrice(automobileDTO.getPrice());
-            existingAuto.setOrigin(automobileDTO.getOrigin());
-            existingAuto.setCount(automobileDTO.getCount());
-            existingAuto.setEngineType(automobileDTO.getEngineType());
-            existingAuto.setCarModel(carModelRepository.findById(carModelId)
-                    .orElseThrow(() -> new RuntimeException("Модель не найдена")));
             existingAuto.setPhoto(resultPhoto);
-
             automobileRepository.save(existingAuto);
 
             AutomobileDTO responseDTO = new AutomobileDTO();
@@ -274,8 +288,8 @@ public class AutomobileController {
             responseDTO.setCount(existingAuto.getCount());
             responseDTO.setOrigin(existingAuto.getOrigin());
             responseDTO.setEngineType(existingAuto.getEngineType());
-            automobileDTO.setCarModelId(existingAuto.getCarModel().getId());
-            automobileDTO.setCarModelName(existingAuto.getCarModel().getName());
+            responseDTO.setCarModelId(existingAuto.getCarModel().getId());
+            responseDTO.setCarModelName(existingAuto.getCarModel().getName());
 
             if (existingAuto.getPhoto() != null && !existingAuto.getPhoto().isEmpty()) {
                 responseDTO.setPhoto("http://localhost:8080/img/automobile/" + existingAuto.getPhoto());
