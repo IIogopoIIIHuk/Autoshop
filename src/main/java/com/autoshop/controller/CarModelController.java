@@ -27,7 +27,7 @@ public class CarModelController {
 
     private final CarModelRepository carModelRepository;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("permitAll()")
     @GetMapping
     public ResponseEntity<?> getAllModels(){
         List<CarModelDTO> models = carModelRepository.findAll().stream()

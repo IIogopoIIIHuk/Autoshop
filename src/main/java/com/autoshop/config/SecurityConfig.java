@@ -72,6 +72,11 @@ public class SecurityConfig {
                                         "/users/**"
                                 ).authenticated()
                                 .requestMatchers("/img/**").permitAll()
+//                                .requestMatchers(
+//                                        "/automobiles/",
+//                                        "/automobiles/{id}",
+//                                        "/automobiles/searchAuto"
+//                                ).permitAll()
 //                              .requestMatchers("/admin").authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
