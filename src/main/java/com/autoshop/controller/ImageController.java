@@ -20,7 +20,6 @@ public class ImageController {
 
     private final String uploadImg = "D:/AutoShop_Images/automobile/";
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/automobile/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {

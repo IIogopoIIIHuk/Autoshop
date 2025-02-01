@@ -69,9 +69,9 @@ public class SecurityConfig {
                                         "/models/**",
                                         "/profile/**",
                                         "/stats/**",
-                                        "/users/**",
-                                        "/img/**"
+                                        "/users/**"
                                 ).authenticated()
+                                .requestMatchers("/img/**").permitAll()
 //                              .requestMatchers("/admin").authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
