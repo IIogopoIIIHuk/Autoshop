@@ -28,12 +28,33 @@ public class StatsController {
         List<Automobile> automobiles = automobileRepository.findAll();
         float totalIncome = automobiles.stream().map(Automobile::getIncomePrice).reduce(0f, Float::sum);
 
+        List<Map<String, Object>> automobileStats = automobiles.stream().map(auto -> {
+            Map<String, Object> autoMap = new HashMap<>();
+            autoMap.put("id", auto.getId());
+            autoMap.put("name", auto.getName());
+            autoMap.put("photo", auto.getPhoto());
+            autoMap.put("price", auto.getPrice());
+            autoMap.put("origin", auto.getOrigin());
+            autoMap.put("count", auto.getCount());
+            autoMap.put("engineType", auto.getEngineType());
+            autoMap.put("applications", auto.getApplications());
+            autoMap.put("incomePrice", auto.getIncomePrice());
+            autoMap.put("incomeCount", auto.getIncomeCount());
+
+            if (auto.getCarModel() != null) {
+                autoMap.put("model", auto.getCarModel().getName());
+            }
+
+            return autoMap;
+        }).toList();
+
         Map<String, Object> response = new HashMap<>();
-        response.put("automobiles", automobiles);
         response.put("income", totalIncome);
+        response.put("automobiles", automobileStats);
 
         return ResponseEntity.ok(response);
     }
+
 
     // повесил админа, потому что удаляет все машины в базе,
     // хз зачем тут вообще этот метод, но было так, надо смотреть по дизайну,
@@ -52,55 +73,131 @@ public class StatsController {
         List<CarModel> models = carModelRepository.findAll();
 
         // Топ-5 автомобилей по доходу
-        List<Automobile> top5ByIncome = automobiles.stream()
+        List<Map<String, Object>> top5ByIncome = automobiles.stream()
                 .sorted(Comparator.comparing(Automobile::getIncomePrice).reversed())
                 .limit(5)
-                .collect(Collectors.toList());
+                .map(auto -> {
+                    Map<String, Object> autoMap = new HashMap<>();
+                    autoMap.put("id", auto.getId());
+                    autoMap.put("name", auto.getName());
+                    autoMap.put("price", auto.getPrice());
+                    autoMap.put("incomePrice", auto.getIncomePrice());
+                    autoMap.put("count", auto.getCount());
+                    autoMap.put("photo", auto.getPhoto());
+                    autoMap.put("origin", auto.getOrigin());
+                    autoMap.put("engineType", auto.getEngineType());
+
+                    if (auto.getCarModel() != null) {
+                        autoMap.put("model", auto.getCarModel().getName());
+                    }
+
+                    return autoMap;
+                }).toList();
 
         // Автомобили, отсортированные по количеству продаж
-        List<Automobile> sortedByCount = automobiles.stream()
+        List<Map<String, Object>> sortedByCount = automobiles.stream()
                 .sorted(Comparator.comparing(Automobile::getCount).reversed())
-                .collect(Collectors.toList());
+                .map(auto -> {
+                    Map<String, Object> autoMap = new HashMap<>();
+                    autoMap.put("id", auto.getId());
+                    autoMap.put("name", auto.getName());
+                    autoMap.put("price", auto.getPrice());
+                    autoMap.put("incomePrice", auto.getIncomePrice());
+                    autoMap.put("count", auto.getCount());
+                    autoMap.put("photo", auto.getPhoto());
+                    autoMap.put("origin", auto.getOrigin());
+                    autoMap.put("engineType", auto.getEngineType());
+
+                    if (auto.getCarModel() != null) {
+                        autoMap.put("model", auto.getCarModel().getName());
+                    }
+
+                    return autoMap;
+                }).toList();
 
         // Доходность по моделям
-        Map<String, Float> modelIncomeMap = models.stream()
-                .collect(Collectors.toMap(CarModel::getName, CarModel::getIncomePrice));
+        List<Map<String, Object>> modelIncomeList = models.stream()
+                .map(carModel -> Map.of(carModel.getName(), (Object) carModel.getIncomePrice()))
+                .toList();
+
+        Map<String, Object> modelIncome = new LinkedHashMap<>();
+        modelIncome.put("name", modelIncomeList);
 
         Map<String, Object> response = new HashMap<>();
         response.put("top5ByIncome", top5ByIncome);
         response.put("sortedByCount", sortedByCount);
-        response.put("modelIncome", modelIncomeMap);
+        response.put("modelIncome", modelIncome);
 
         return ResponseEntity.ok(response);
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/income")
-    public ResponseEntity<List<Automobile>> getTop5Income() {
-        List<Automobile> top5ByIncome = automobileRepository.findAll().stream()
+    public ResponseEntity<List<Map<String, Object>>> getTop5Income() {
+        List<Map<String, Object>> top5ByIncome = automobileRepository.findAll().stream()
                 .sorted(Comparator.comparing(Automobile::getIncomePrice).reversed())
                 .limit(5)
-                .collect(Collectors.toList());
+                .map(auto -> {
+                    Map<String, Object> autoMap = new LinkedHashMap<>();
+                    autoMap.put("id", auto.getId());
+                    autoMap.put("name", auto.getName());
+                    autoMap.put("price", auto.getPrice());
+                    autoMap.put("incomePrice", auto.getIncomePrice());
+                    autoMap.put("count", auto.getCount());
+                    autoMap.put("photo", auto.getPhoto());
+                    autoMap.put("origin", auto.getOrigin());
+                    autoMap.put("engineType", auto.getEngineType());
+
+                    if (auto.getCarModel() != null) {
+                        autoMap.put("model", auto.getCarModel().getName());
+                    }
+
+                    return autoMap;
+                }).toList();
 
         return ResponseEntity.ok(top5ByIncome);
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/count")
-    public ResponseEntity<List<Automobile>> getSortedByCount() {
-        List<Automobile> sortedByCount = automobileRepository.findAll().stream()
+    public ResponseEntity<List<Map<String, Object>>> getSortedByCount() {
+        List<Map<String, Object>> sortedByCount = automobileRepository.findAll().stream()
                 .sorted(Comparator.comparing(Automobile::getCount).reversed())
-                .collect(Collectors.toList());
+                .map(auto -> {
+                    Map<String, Object> autoMap = new LinkedHashMap<>();
+                    autoMap.put("id", auto.getId());
+                    autoMap.put("name", auto.getName());
+                    autoMap.put("price", auto.getPrice());
+                    autoMap.put("incomePrice", auto.getIncomePrice());
+                    autoMap.put("count", auto.getCount());
+                    autoMap.put("photo", auto.getPhoto());
+                    autoMap.put("origin", auto.getOrigin());
+                    autoMap.put("engineType", auto.getEngineType());
+
+                    if (auto.getCarModel() != null) {
+                        autoMap.put("model", auto.getCarModel().getName());
+                    }
+
+                    return autoMap;
+                }).toList();
 
         return ResponseEntity.ok(sortedByCount);
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/model")
-    public ResponseEntity<Map<String, Float>> getModelIncome() {
-        Map<String, Float> modelIncomeMap = carModelRepository.findAll().stream()
-                .collect(Collectors.toMap(CarModel::getName, CarModel::getIncomePrice));
+    public ResponseEntity<Map<String, Object>> getModelIncome() {
+        List<Map<String, Object>> modelIncomeList = carModelRepository.findAll().stream()
+                .map(carModel -> Map.of(carModel.getName(), (Object) carModel.getIncomePrice()))
+                .toList();
 
-        return ResponseEntity.ok(modelIncomeMap);
+        Map<String, Object> modelIncome = new LinkedHashMap<>();
+        modelIncome.put("name", modelIncomeList);
+
+        return ResponseEntity.ok(modelIncome);
     }
+
 }
