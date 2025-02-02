@@ -1,5 +1,7 @@
 package com.autoshop.controller;
 
+import com.autoshop.DTO.ApplicationResponseDTO;
+import com.autoshop.DTO.AutomobileDTO;
 import com.autoshop.entity.Application;
 import com.autoshop.entity.Automobile;
 import com.autoshop.entity.User;
@@ -61,7 +63,11 @@ public class ApplicationController {
 
         applications.sort(Comparator.comparing(Application::getId).reversed());
 
-        return ResponseEntity.ok(applications);
+        List<ApplicationResponseDTO> responseDTOs = applications.stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        return ResponseEntity.ok(responseDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -81,7 +87,7 @@ public class ApplicationController {
             return ResponseEntity.badRequest().body("Недостаточно автомобилей для выполнения заявки");
         }
 
-        return ResponseEntity.ok(application);
+        return ResponseEntity.ok(convertToDTO(application));
     }
 
     // PutMapping ?
@@ -94,18 +100,43 @@ public class ApplicationController {
         application.setStatus(ApplicationStatus.REJECT);
         applicationRepository.save(application);
 
-        return ResponseEntity.ok(application);
+        return ResponseEntity.ok(convertToDTO(application));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/delete") // http://localhost:8080/application/1/delete
     public ResponseEntity<?> delete(@PathVariable Long id){
-        if (!applicationRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Заявка не найдена");
-        }
+        Application application = applicationRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Заявка не найдена"));
 
         applicationRepository.deleteById(id);
-        return ResponseEntity.noContent().build(); // HTTP 204
+
+        return ResponseEntity.ok(convertToDTO(application));
+    }
+
+
+    private ApplicationResponseDTO convertToDTO(Application application) {
+        ApplicationResponseDTO dto = new ApplicationResponseDTO();
+        dto.setId(application.getId());
+        dto.setPrice(application.getPrice());
+        dto.setStatus(application.getStatus().name());
+        dto.setTitleAuto(application.getTitleAuto());
+        dto.setBuyer(application.getBuyer());
+
+        Automobile automobile = application.getAutomobile();
+        if (automobile != null) {
+            dto.setAutomobileId(automobile.getId());
+            dto.setAutomobileEngineType(automobile.getEngineType());
+            dto.setAutomobileOrigin(automobile.getOrigin());
+            dto.setAutomobileModel(automobile.getCarModel().getName());
+            dto.setAutomobileCount(automobile.getCount());
+
+            if (automobile.getPhoto() != null && !automobile.getPhoto().isEmpty()) {
+                dto.setAutomobilePhoto("http://localhost:8080/img/automobile/" + automobile.getPhoto());
+            }
+        }
+
+        return dto;
     }
 
 }
