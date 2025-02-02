@@ -62,7 +62,6 @@ public class AutomobileController {
     @Value("${upload.img}")
     protected String uploadImg;
 
-    @PreAuthorize("permitAll()")
     @GetMapping // URL: http://localhost:8080/automobiles
     public ResponseEntity<?> getAllAutomobiles(){
         List<Automobile> automobiles = automobileRepository.findAll();
@@ -89,7 +88,6 @@ public class AutomobileController {
     }
 
 
-    @PreAuthorize("permitAll()")
     @GetMapping("/searchAuto") // http://localhost:8080/automobiles/searchAuto?name=Toyota
     public ResponseEntity<?> searchByTitle(@RequestParam String name){
         List<Automobile> automobiles = automobileRepository.findByNameContaining(name);
@@ -117,7 +115,6 @@ public class AutomobileController {
     }
 
 
-    @PreAuthorize("permitAll()")
     @GetMapping("/{id}") // http://localhost:8080/automobiles/1
     public ResponseEntity<?> getAutomobile(@PathVariable Long id){
         Automobile automobile = automobileRepository.findById(id)

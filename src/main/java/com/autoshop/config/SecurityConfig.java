@@ -52,7 +52,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-//              .cors(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new CorsConfiguration();
                     corsConfiguration.setAllowedOriginPatterns(List.of("*"));
@@ -62,28 +61,28 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/auth", "/registration").permitAll()
-                                .requestMatchers(
-                                        "/automobiles/**",
-                                        "/application/**",
-                                        "/models/**",
-                                        "/profile/**",
-                                        "/stats/**",
-                                        "/users/**"
-                                ).authenticated()
-                                .requestMatchers("/img/**").permitAll()
-//                                .requestMatchers(
-//                                        "/automobiles/",
-//                                        "/automobiles/{id}",
-//                                        "/automobiles/searchAuto"
-//                                ).permitAll()
-//                              .requestMatchers("/admin").authenticated()
+                        .requestMatchers("/auth", "/registration").permitAll()
+                        .requestMatchers(
+                                "/automobiles",
+                                "/automobiles/{id}",
+                                "/automobiles/searchAuto"
+                        ).permitAll()
+                        .requestMatchers("/img/**").permitAll()
+                        .requestMatchers(
+                                "/automobiles/**",
+                                "/application/**",
+                                "/models/**",
+                                "/profile/**",
+                                "/stats/**",
+                                "/users/**"
+                        ).authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
