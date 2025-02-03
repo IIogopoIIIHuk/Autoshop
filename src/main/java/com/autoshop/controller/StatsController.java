@@ -6,6 +6,7 @@ import com.autoshop.entity.CarModel;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -116,17 +117,19 @@ public class StatsController {
                 }).toList();
 
         // Доходность по моделям
-        List<Map<String, Object>> modelIncomeList = models.stream()
-                .map(carModel -> Map.of(carModel.getName(), (Object) carModel.getIncomePrice()))
+        List<Map<String, Object>> modelIncomeList = carModelRepository.findAll().stream()
+                .map(carModel -> {
+                    Map<String, Object> modelMap = new LinkedHashMap<>();
+                    modelMap.put("name", carModel.getName());
+                    modelMap.put("price", carModel.getIncomePrice());
+                    return modelMap;
+                })
                 .toList();
-
-        Map<String, Object> modelIncome = new LinkedHashMap<>();
-        modelIncome.put("name", modelIncomeList);
 
         Map<String, Object> response = new HashMap<>();
         response.put("top5ByIncome", top5ByIncome);
         response.put("sortedByCount", sortedByCount);
-        response.put("modelIncome", modelIncome);
+        response.put("modelIncome", modelIncomeList);
 
         return ResponseEntity.ok(response);
     }
@@ -159,7 +162,6 @@ public class StatsController {
         return ResponseEntity.ok(top5ByIncome);
     }
 
-
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/count")
     public ResponseEntity<List<Map<String, Object>>> getSortedByCount() {
@@ -186,18 +188,22 @@ public class StatsController {
         return ResponseEntity.ok(sortedByCount);
     }
 
-
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/model")
-    public ResponseEntity<Map<String, Object>> getModelIncome() {
+    public ResponseEntity<List<Map<String, Object>>> getModelIncome() {
         List<Map<String, Object>> modelIncomeList = carModelRepository.findAll().stream()
-                .map(carModel -> Map.of(carModel.getName(), (Object) carModel.getIncomePrice()))
+                .map(carModel -> {
+                    Map<String, Object> modelMap = new LinkedHashMap<>();
+                    modelMap.put("name", carModel.getName());
+                    modelMap.put("price", carModel.getIncomePrice());
+                    return modelMap;
+                })
                 .toList();
 
-        Map<String, Object> modelIncome = new LinkedHashMap<>();
-        modelIncome.put("name", modelIncomeList);
-
-        return ResponseEntity.ok(modelIncome);
+        return ResponseEntity.ok(modelIncomeList);
     }
+
+
+
 
 }
