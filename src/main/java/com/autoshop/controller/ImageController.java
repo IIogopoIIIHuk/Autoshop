@@ -14,8 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/img") //хз зачем этот контроллер и отвечает ли он за что-то,
-// вроде нет, делал его когда тестил вывод картинки, вешаю роли просто чтобы все работало если нужно все-таки
+@RequestMapping("/img")
 public class ImageController {
 
     private final String uploadImg = "D:/AutoShop_Images/automobile/";

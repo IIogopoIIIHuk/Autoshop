@@ -139,12 +139,16 @@ public class AutomobileController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/{id}/application") // http://localhost:8080/automobiles/1/application
-    public ResponseEntity<?> createApplication(@PathVariable Long id){
+    public ResponseEntity<?> createApplication(@PathVariable Long id) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("Current user: {}", currentUser);
 
         Automobile automobile = automobileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
+
+        if (automobile.getCount() <= 0) {
+            return ResponseEntity.badRequest().body("Ошибка: Автомобили данной модели закончились. Заявка невозможна.");
+        }
 
         Application application = Application.builder()
                 .price(automobile.getPrice())
@@ -157,6 +161,7 @@ public class AutomobileController {
         applicationRepository.save(application);
         return ResponseEntity.ok(application);
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/add", consumes = {"multipart/form-data"})
