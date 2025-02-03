@@ -9,6 +9,7 @@ import com.autoshop.entity.Automobile;
 import com.autoshop.entity.CarModel;
 import com.autoshop.entity.enums.ApplicationStatus;
 import com.autoshop.entity.enums.EngineType;
+import com.autoshop.exception.ErrorResponse;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
@@ -88,7 +89,7 @@ public class AutomobileController {
     }
 
 
-    @GetMapping("/searchAuto") // http://localhost:8080/automobiles/searchAuto?name=Toyota
+    @GetMapping("/searchAuto") // http://localhost:8080/automobiles/searchAuto?name=mer
     public ResponseEntity<?> searchByTitle(@RequestParam String name){
         List<Automobile> automobiles = automobileRepository.findByNameContaining(name);
 
@@ -147,7 +148,9 @@ public class AutomobileController {
                 .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
 
         if (automobile.getCount() <= 0) {
-            return ResponseEntity.badRequest().body("Ошибка: Автомобили данной модели закончились. Заявка невозможна.");
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse(true, "Автомобили данной модели закончились. Заявка невозможна."));
         }
 
         Application application = Application.builder()

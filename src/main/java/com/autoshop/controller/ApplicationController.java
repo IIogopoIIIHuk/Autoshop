@@ -6,6 +6,7 @@ import com.autoshop.entity.Application;
 import com.autoshop.entity.Automobile;
 import com.autoshop.entity.User;
 import com.autoshop.entity.enums.ApplicationStatus;
+import com.autoshop.exception.ErrorResponse;
 import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.UserRepository;
@@ -84,7 +85,9 @@ public class ApplicationController {
             automobile.setCount(automobile.getCount() - 1);
             automobileRepository.save(automobile);
         } else {
-            return ResponseEntity.badRequest().body("Недостаточно автомобилей для выполнения заявки");
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse(true,"Недостаточно автомобилей для выполнения заявки"));
         }
 
         return ResponseEntity.ok(convertToDTO(application));
