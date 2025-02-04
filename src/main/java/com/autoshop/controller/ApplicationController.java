@@ -106,7 +106,7 @@ public class ApplicationController {
         return ResponseEntity.ok(convertToDTO(application));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/{id}/delete") // http://localhost:8080/application/1/delete
     public ResponseEntity<?> delete(@PathVariable Long id){
         Application application = applicationRepository.findById(id)
