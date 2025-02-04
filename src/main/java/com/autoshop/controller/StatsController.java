@@ -3,6 +3,7 @@ package com.autoshop.controller;
 import com.autoshop.DTO.AutomobileDTO;
 import com.autoshop.entity.Automobile;
 import com.autoshop.entity.CarModel;
+import com.autoshop.repo.ApplicationRepository;
 import com.autoshop.repo.AutomobileRepository;
 import com.autoshop.repo.CarModelRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class StatsController {
 
     private final AutomobileRepository automobileRepository;
     private final CarModelRepository carModelRepository;
+    private final ApplicationRepository applicationRepository;
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -63,7 +65,7 @@ public class StatsController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/reset")
     public ResponseEntity<String> resetStats() {
-        automobileRepository.deleteAll();
+        applicationRepository.deleteAll();
         return ResponseEntity.ok("All automobile data has been reset.");
     }
 

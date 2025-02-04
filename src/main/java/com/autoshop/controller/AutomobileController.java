@@ -150,7 +150,10 @@ public class AutomobileController {
         if (automobile.getCount() <= 0) {
             return ResponseEntity
                     .badRequest()
-                    .body(new ErrorResponse(true, "Автомобили данной модели закончились. Заявка невозможна."));
+                    .body(new ErrorResponse(
+                            true,
+                            "Автомобили данной модели закончились. Заявка невозможна."
+                    ));
         }
 
         Application application = Application.builder()
