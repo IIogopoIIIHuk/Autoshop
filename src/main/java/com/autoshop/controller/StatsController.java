@@ -66,7 +66,7 @@ public class StatsController {
     @DeleteMapping("/reset")
     public ResponseEntity<String> resetStats() {
         applicationRepository.deleteAll();
-        return ResponseEntity.ok("All automobile data has been reset.");
+        return ResponseEntity.ok("All application data has been reset.");
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
