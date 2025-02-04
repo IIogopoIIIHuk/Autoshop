@@ -93,7 +93,7 @@ public class ApplicationController {
         return ResponseEntity.ok(convertToDTO(application));
     }
 
-    // PutMapping ?
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/reject") // http://localhost:8080/application/1/reject
     public ResponseEntity<?> rejectApplication(@PathVariable Long id){
@@ -130,6 +130,7 @@ public class ApplicationController {
         if (automobile != null) {
             dto.setAutomobileId(automobile.getId());
             dto.setAutomobileEngineType(automobile.getEngineType());
+            dto.setAutomobileCount(automobile.getCount());
             dto.setAutomobileOrigin(automobile.getOrigin());
             dto.setAutomobileModel(automobile.getCarModel().getName());
             dto.setAutomobileCount(automobile.getCount());
