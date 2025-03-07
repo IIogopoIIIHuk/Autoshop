@@ -74,7 +74,8 @@ public class SecurityConfig {
                                 "/models/**",
                                 "/profile/**",
                                 "/stats/**",
-                                "/users/**"
+                                "/users/**",
+                                "/api/feedback/**"
                         ).authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
